@@ -13,7 +13,7 @@ void setup_server(int server_socket, int PORT) {
     struct sockaddr_in address;
     
     int opt = 1;
-    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR | SO_BROADCAST, &opt, sizeof(opt))) { //cambio de SO_REUSEPORT a SO_BROADCAST
         perror("setsockopt failed");
         exit(EXIT_FAILURE);
     }
@@ -30,36 +30,64 @@ void setup_server(int server_socket, int PORT) {
     }
 }
 
-void *handle_request(void *client_socket) {
-    int _client_socket = *(int *) client_socket; //client socket
+void *handle_request(void *client_socket_args) {
+
+    struct handle_request_args* args = (struct handle_request_args*) client_socket_args;
+    const char *PATH = args->PATH;
+    int _client_socket = *(int *) args->client_socket; //client socket
     char buffer[1024];
+    memset(buffer, 0, sizeof(buffer));
     int valread;
+
     valread = read(_client_socket, buffer, 1024);
     if (valread < 1) {
         perror("No data.");
         return NULL;
     }
-    printf("Received:\n%s", buffer); //print all request
+    printf("Received first:\n%s", buffer); //print all request
     send(_client_socket, buffer, strlen(buffer), 0);
+    //
+    http_request_t *request = NULL;
+    if (valread < 1) {
+    perror("No data.");
+    return NULL;
+    }
+    printf("Received second:\n%s", buffer); //print all request
+    
+    //send(_client_socket, params.PATH, strlen(params.PATH), 0);
+    request = parse_request(buffer, PATH);
+
+    if (request == NULL) {
+        perror("Failed to parse request");
+        return NULL;
+    }
+    char response[1024];
+    strcpy(response, process_request(request));
+    send(_client_socket, response, strlen(response), 0);
     memset(buffer, 0, sizeof(buffer));
     close(_client_socket);
     return NULL;
 }
 
-void handle_connection(int server_socket){
+void handle_connection(int server_socket, const char *PATH, const char *LOGFILE){
     int newSocket;
 	struct sockaddr_in newAddr;
     socklen_t address_length;
 
+    struct handle_request_args args;
+    args.PATH = PATH;
+    args.LOGFILE = LOGFILE;
+
 	while(1){
 		newSocket = accept(server_socket, (struct sockaddr *) &newAddr, &address_length);
+        args.client_socket = &newSocket;
 		if(newSocket < 0){
 			exit(1);
 		}
 		printf("Connection accepted from %s:%d\n\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
         
         pthread_t threadid;
-        if (pthread_create(&threadid, NULL, handle_request, (void *) &newSocket) < 0) {
+        if (pthread_create(&threadid, NULL, handle_request, (void *) &args) < 0) {
             perror("Error: could not create thread");
             exit(1);
         }

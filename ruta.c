@@ -19,7 +19,11 @@ char* get_absolute_path(char* relative_path) {
         free(absolute_path);
         return NULL;
     }
-
+    if(strchr(relative_path, '/'))
+    {
+        strcat(absolute_path, relative_path+1);
+        return(absolute_path);
+    }
     // Concatenamos el path relativo al path absoluto
     strcat(absolute_path, "/");
     strcat(absolute_path, relative_path);
