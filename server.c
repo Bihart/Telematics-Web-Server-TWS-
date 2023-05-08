@@ -44,9 +44,6 @@ void *handle_request(void *client_socket_args) {
         perror("No data.");
         return NULL;
     }
-    printf("Received first:\n%s", buffer); //print all request
-    send(_client_socket, buffer, strlen(buffer), 0);
-    //
     http_request_t *request = NULL;
     if (valread < 1) {
     perror("No data.");
@@ -54,18 +51,19 @@ void *handle_request(void *client_socket_args) {
     }
     printf("Received second:\n%s", buffer); //print all request
     
-    //send(_client_socket, params.PATH, strlen(params.PATH), 0);
     request = parse_request(buffer, PATH);
 
     if (request == NULL) {
         perror("Failed to parse request");
         return NULL;
     }
-    char response[1024];
-    strcpy(response, process_request(request));
-    send(_client_socket, response, strlen(response), 0);
+
+    http_response_t *response = process_request(request);
+    send(_client_socket, response->content, response->length, 0);
+    printf("Response : %s\n", response->content);
     memset(buffer, 0, sizeof(buffer));
     close(_client_socket);
+    free(response);
     return NULL;
 }
 
