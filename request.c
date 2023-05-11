@@ -3,6 +3,10 @@
 http_request_t* parse_request(char* request_str, const char *PATH){
     http_request_t *REQ = (http_request_t *) malloc(sizeof(http_request_t));
     sscanf(request_str, "%s %s %*s", REQ->method, REQ->path);
+    if (strcmp(REQ->path, "/favicon.ico") == 0) {
+        free(REQ);
+        return NULL;
+    }
     char *copy_path = malloc(strlen(PATH) + strlen(REQ->path) + 1);
     if (copy_path == NULL) {
         perror("Error: failed to allocate memory for copy_path");
@@ -107,7 +111,7 @@ http_response_t *get_response(const char *PATH, char *content)
                               "Server: Telematics Web Server\r\n"
                               "\r\n%s\r\n";
     size_t buffer_lenght = snprintf(NULL, 0, http_response_template, status_code, status, 
-    content_type, content_lenght, date, content) + 1;
+    content_type, content_lenght, date, content) + 10;
     char *response = (char*) malloc(buffer_lenght+10);
 
     sprintf(response, http_response_template, status_code, status, 
