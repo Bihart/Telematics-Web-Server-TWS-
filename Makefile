@@ -6,7 +6,7 @@ SHELL = bash
 
 all: build
 build: $(SRCS)
-	$(CC) $(CFLAGS) main.c request.c server.c -o serve
+	$(CC) $(CFLAGS) main.c request.c server.c -o server
 
 .PHONY: clean
 clean:
