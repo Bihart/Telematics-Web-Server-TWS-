@@ -11,17 +11,16 @@
 #include "request.h"
 
 
-
 struct handle_request_args {
-    int *client_socket;
-    // nuevo argumento
-    const char *PATH;
-    const char *LOGFILE;
+  int *client_socket;
+  const char *PATH;
+  const char *LOGFILE;
 };
 
 int create_socket();
 void setup_server(int server_socket, int PORT);
 void *handle_request(void *client_socket_args);
-void handle_connection(int server_socket, const char *PATH, const char *LOGFILE);
+void
+handle_connection(int server_socket, const char *PATH, const char *LOGFILE);
 
 #endif

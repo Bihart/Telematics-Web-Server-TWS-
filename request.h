@@ -1,5 +1,5 @@
 #ifndef REQUEST_H
-#define REQUEST_H   
+#define REQUEST_H
 
 #include <stdio.h>
 #include <string.h>
@@ -13,14 +13,14 @@
 
 struct http_request
 {
-    char method[10];
-    char path[1024];
+	char method[10];
+	char path[1024];
 };
 
 typedef struct http_response
 {
-    char *content;
-    size_t length;
+	char *content;
+	size_t length;
 
 } http_response_t;
 
